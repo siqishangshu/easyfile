@@ -258,17 +258,6 @@ public class ExcelImportHelper<T> extends DefaultHandler {
                     }
                     sheetMatrix.add(list);
                 }
-                /**
-                 * note this may lost the null value cell
-                 */
-//                for (Row row : sheet) {
-//                    ArrayList<String> list = new ArrayList<>(row.getLastCellNum());
-//                    for (Cell cell : row) {
-//                        //根据不同类型转化成字符串
-//                        list.add(getCellStringVal(cell));
-//                    }
-//                    sheetMatrix.add(list);
-//                }
             }
             dataMatrix.add(sheetMatrix);
         }
