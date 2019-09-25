@@ -1,17 +1,17 @@
 package cn.mxsic.easyfile;
 
-import cn.mxsic.easyfile.base.FileType;
-import cn.mxsic.easyfile.csv.CsvExportHelper;
-import cn.mxsic.easyfile.csv.CsvImportHelper;
-import cn.mxsic.easyfile.excel.ExcelExportHelper;
-import cn.mxsic.easyfile.excel.ExcelImportHelper;
-
 import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import cn.mxsic.easyfile.base.FileType;
+import cn.mxsic.easyfile.csv.CsvExportHelper;
+import cn.mxsic.easyfile.csv.CsvImportHelper;
+import cn.mxsic.easyfile.excel.ExcelExportHelper;
+import cn.mxsic.easyfile.excel.ExcelImportHelper;
 
 /**
  * Function: ImportMain <br>
@@ -23,15 +23,15 @@ public class ImportTest {
 
     @Test
     public void test() {
-//        excelImport();
+        excelImport();
 //        List<Man> manList = generalMan(195);
 //        excelExport(manList);
 //        csvExport(manList);
-        csvImport();
+//        csvImport();
     }
 
     private void csvImport() {
-        String filePath = "/Users/siqishangshu/Desktop/222.csv";
+        String filePath = "/Users/siqishangshu/Desktop/fromexcel.csv";
         System.out.println(new Date() + filePath);
         File file = new File(filePath);
         CsvImportHelper<Man> manCsvImportHelper = new CsvImportHelper<>(file, Man.class);
@@ -49,7 +49,7 @@ public class ImportTest {
 
 
     private void excelImport() {
-        String filePath = "/Users/siqishangshu/Desktop/222.xlsx";
+        String filePath = "/Users/siqishangshu/Desktop/000.xlsx";
         System.out.println(new Date() + filePath);
         File file = new File(filePath);
         ExcelImportHelper<Man> manExcelImportHelper = new ExcelImportHelper<>(file, FileType.getFileType(file.getName()), Man.class);

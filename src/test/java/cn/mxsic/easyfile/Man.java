@@ -1,11 +1,11 @@
 package cn.mxsic.easyfile;
 
+import java.util.Date;
+
 import cn.mxsic.easyfile.annotation.Cols;
 import cn.mxsic.easyfile.annotation.Format;
 import cn.mxsic.easyfile.annotation.Title;
-
-import java.util.Date;
-
+import cn.mxsic.easyfile.annotation.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,10 +37,10 @@ public class Man {
     private Date birthday;
 
 //    @Transient
-    @Cols(5)
+    @Cols(15)
     @Title("工作")
     private String job;
-//    @Transient
+    @Transient
     private String job2;
 
 

@@ -1,14 +1,5 @@
 package cn.mxsic.easyfile.excel;
 
-import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.CsvConstant;
-import cn.mxsic.easyfile.base.DataTypeProcessor;
-import cn.mxsic.easyfile.base.DocField;
-import cn.mxsic.easyfile.base.FileType;
-import cn.mxsic.easyfile.base.ScopeType;
-import cn.mxsic.easyfile.exception.ImportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
-
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -25,10 +16,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import cn.mxsic.easyfile.base.AnnotationHelper;
+import cn.mxsic.easyfile.base.CsvConstant;
+import cn.mxsic.easyfile.base.DataTypeProcessor;
+import cn.mxsic.easyfile.base.DocField;
+import cn.mxsic.easyfile.base.FileType;
+import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.exception.ImportException;
+import cn.mxsic.easyfile.utils.ObjectUtils;
 
 /**
  * @author siqishangshu
@@ -49,6 +50,11 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     private Workbook workbook;
 
     private String[] titles;
+    /**
+     * 设置保留多少位小数
+     * 取消科学计数法
+     */
+    private static NumberFormat numberFormat = NumberFormat.getInstance();
 
     /**
      *
@@ -152,9 +158,12 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      */
     public List<T> importData() {
         try {
+            numberFormat.setMaximumFractionDigits(20);
+            numberFormat.setGroupingUsed(false);
             loadDataMatrix();
             return getResult();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ImportException(e);
         }
     }
@@ -188,10 +197,12 @@ public class ExcelImportHelper<T> extends DefaultHandler {
                         }
                     }
                     for (DocField docField : docFields) {
-                        if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.readTitle()) {
-                            this.docFieldMap.put(docField.getTitle(), docField);
+                        if (ObjectUtils.isNotEmpty(docField)) {
+                            if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.readTitle()) {
+                                this.docFieldMap.put(docField.getTitle(), docField);
+                            }
+                            this.docFieldMap.put(docField.getField().getName(), docField);
                         }
-                        this.docFieldMap.put(docField.getField().getName(), docField);
                     }
                 }
             }
@@ -244,7 +255,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
         CellType cellType = cell.getCellTypeEnum();
         switch (cellType) {
             case NUMERIC:
-                return cell.getStringCellValue();
+                return numberFormat.format(cell.getNumericCellValue());
             case STRING:
                 return cell.getStringCellValue();
             case BOOLEAN:

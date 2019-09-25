@@ -1,13 +1,5 @@
 package cn.mxsic.easyfile.csv;
 
-import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.CsvConstant;
-import cn.mxsic.easyfile.base.DataTypeProcessor;
-import cn.mxsic.easyfile.base.DocField;
-import cn.mxsic.easyfile.base.ScopeType;
-import cn.mxsic.easyfile.exception.ImportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
-
 import org.apache.poi.util.IOUtils;
 
 import java.io.BufferedReader;
@@ -22,6 +14,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import cn.mxsic.easyfile.base.AnnotationHelper;
+import cn.mxsic.easyfile.base.CsvConstant;
+import cn.mxsic.easyfile.base.DataTypeProcessor;
+import cn.mxsic.easyfile.base.DocField;
+import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.exception.ImportException;
+import cn.mxsic.easyfile.utils.ObjectUtils;
 
 
 /**
@@ -125,12 +125,12 @@ public class CsvImportHelper<T> {
         for (int i = 0; i < values.size(); i++) {
             String value = values.get(i);
             if (ObjectUtils.isEmpty(value)) {
-                return;
+                continue;
             }
             String field = this.titles[i];
             DocField docField = this.docFieldMap.get(field);
             if (ObjectUtils.isEmpty(docField)) {
-                return;
+                continue;
             }
             if (docField.readFormat()) {
                 docField.getField().set(t, docField.getFormatter().read(value));
@@ -148,7 +148,7 @@ public class CsvImportHelper<T> {
     private void loadMatrix() throws IOException {
         String pre = "";
         for (String str = this.reader.readLine(); str != null; str = this.reader.readLine()) {
-            if (str.isEmpty()) {
+            if (ObjectUtils.isEmpty(str)) {
                 continue;
             }
             if (oneRow(pre + str)) {
