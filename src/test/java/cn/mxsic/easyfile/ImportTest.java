@@ -23,6 +23,7 @@ public class ImportTest {
 
     @Test
     public void test() {
+//        excelCusImport();
         excelImport();
 //        List<Man> manList = generalMan(195);
 //        excelExport(manList);
@@ -49,10 +50,19 @@ public class ImportTest {
 
 
     private void excelImport() {
-        String filePath = "/Users/siqishangshu/Desktop/000.xlsx";
+        String filePath = "/Users/siqishangshu/Desktop/111.xlsx";
         System.out.println(new Date() + filePath);
         File file = new File(filePath);
         ExcelImportHelper<Man> manExcelImportHelper = new ExcelImportHelper<>(file, FileType.getFileType(file.getName()), Man.class);
+        manExcelImportHelper.importData();
+        System.out.println(new Date() + "excel size:" + manExcelImportHelper.getData().size());
+    }
+
+    private void excelCusImport() {
+        String filePath = "/Users/siqishangshu/Desktop/cus.xlsx";
+        System.out.println(new Date() + filePath);
+        File file = new File(filePath);
+        ExcelImportHelper<Customer> manExcelImportHelper = new ExcelImportHelper<>(file, FileType.getFileType(file.getName()), Customer.class);
         manExcelImportHelper.importData();
         System.out.println(new Date() + "excel size:" + manExcelImportHelper.getData().size());
     }

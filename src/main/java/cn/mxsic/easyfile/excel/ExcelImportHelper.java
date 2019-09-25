@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.CsvConstant;
 import cn.mxsic.easyfile.base.DataTypeProcessor;
 import cn.mxsic.easyfile.base.DocField;
 import cn.mxsic.easyfile.base.FileType;
@@ -239,19 +238,47 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             ArrayList<List<String>> sheetMatrix = new ArrayList<>();
             Sheet sheet = workbook.getSheetAt(i);
             //第一行为标题
-            for (Row row : sheet) {
-                ArrayList<String> list = new ArrayList<>(row.getLastCellNum());
-                for (Cell cell : row) {
-                    //根据不同类型转化成字符串
-                    list.add(getCellStringVal(cell));
+            if (sheet.getLastRowNum() > 0) {
+                /**
+                 * head line;
+                 */
+                Row head = sheet.getRow(0);
+                int cellSize = head.getLastCellNum();
+                for (int rowNum = 0; rowNum <= sheet.getLastRowNum(); rowNum++) {
+                    Row row = sheet.getRow(rowNum);
+                    ArrayList<String> list = new ArrayList<>(cellSize);
+                    for (int j = 0; j < cellSize; j++) {
+                        //一行占位无数据。
+                        if (ObjectUtils.isEmpty(row)) {
+                            list.add(getCellStringVal(null));
+                        } else {
+                            //根据不同类型转化成字符串
+                            list.add(getCellStringVal(row.getCell(j)));
+                        }
+                    }
+                    sheetMatrix.add(list);
                 }
-                sheetMatrix.add(list);
+                /**
+                 * note this may lost the null value cell
+                 */
+//                for (Row row : sheet) {
+//                    ArrayList<String> list = new ArrayList<>(row.getLastCellNum());
+//                    for (Cell cell : row) {
+//                        //根据不同类型转化成字符串
+//                        list.add(getCellStringVal(cell));
+//                    }
+//                    sheetMatrix.add(list);
+//                }
             }
             dataMatrix.add(sheetMatrix);
         }
     }
 
     private String getCellStringVal(Cell cell) {
+        //无数据时
+        if (ObjectUtils.isEmpty(cell)) {
+            return "";
+        }
         CellType cellType = cell.getCellTypeEnum();
         switch (cellType) {
             case NUMERIC:
@@ -269,7 +296,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             case ERROR:
                 return String.valueOf(cell.getErrorCellValue());
             default:
-                return CsvConstant.EMPTY;
+                return "";
         }
     }
 }
