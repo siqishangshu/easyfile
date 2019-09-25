@@ -1,12 +1,5 @@
 package cn.mxsic.easyfile.csv;
 
-import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.CsvConstant;
-import cn.mxsic.easyfile.base.DocField;
-import cn.mxsic.easyfile.base.ScopeType;
-import cn.mxsic.easyfile.exception.ExportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
-
 import org.apache.poi.util.IOUtils;
 
 import java.io.File;
@@ -14,6 +7,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+
+import cn.mxsic.easyfile.base.AnnotationHelper;
+import cn.mxsic.easyfile.base.EasyField;
+import cn.mxsic.easyfile.base.EasyFileConstant;
+import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.exception.ExportException;
+import cn.mxsic.easyfile.utils.ObjectUtils;
 
 /**
  * @author siqishangshu
@@ -34,7 +34,7 @@ public class CsvExportHelper<T> {
     /**
      * 导出标题，及字段信息
      */
-    private DocField[] docFields;
+    private EasyField[] docFields;
 
     /**
      * writer
@@ -68,7 +68,7 @@ public class CsvExportHelper<T> {
 
             this.docFields = AnnotationHelper.getAnnotationFields(tClass, ScopeType.EXPORT);
             this.titles = AnnotationHelper.getHeadFieldTitles(this.docFields);
-            this.file = File.createTempFile(this.prefix, CsvConstant.SUFFIX);
+            this.file = File.createTempFile(this.prefix, EasyFileConstant.Csv.SUFFIX);
             writer = new FileWriter(file);
             /**
              * write the title
@@ -111,7 +111,7 @@ public class CsvExportHelper<T> {
     private void fullUp(T t) throws IOException, IllegalAccessException {
         String[] cells = new String[this.docFields.length];
         for (int i = 0; i < this.docFields.length; i++) {
-            DocField docField = this.docFields[i];
+            EasyField docField = this.docFields[i];
             if (ObjectUtils.isNotEmpty(docField)) {
                 String value;
                 if (docField.writeFormat()) {
@@ -121,7 +121,7 @@ public class CsvExportHelper<T> {
                 }
                 cells[i] = value;
             } else {
-                cells[i] = CsvConstant.EMPTY;
+                cells[i] = EasyFileConstant.Csv.EMPTY;
             }
         }
         writeRow(cells);
@@ -131,10 +131,10 @@ public class CsvExportHelper<T> {
         for (int i = 0; i < cells.length; i++) {
             writer.write(encode(cells[i]));
             if (i < cells.length - 1) {
-                writer.write(CsvConstant.DELIMITER);
+                writer.write(EasyFileConstant.Csv.DELIMITER);
             }
         }
-        writer.write(CsvConstant.END_OF_LINE_SYMBOLS);
+        writer.write(EasyFileConstant.Csv.END_OF_LINE_SYMBOLS);
     }
 
     /**
@@ -147,9 +147,9 @@ public class CsvExportHelper<T> {
      */
     public String encode(final String input) {
         StringBuilder currentColumn = new StringBuilder();
-        char delimiter = CsvConstant.DELIMITER;
-        char quote = CsvConstant.QUOTE_CHAR;
-        String endOfLineSymbols = CsvConstant.END_OF_LINE_SYMBOLS;
+        char delimiter = EasyFileConstant.Csv.DELIMITER;
+        char quote = EasyFileConstant.Csv.QUOTE_CHAR;
+        String endOfLineSymbols = EasyFileConstant.Csv.END_OF_LINE_SYMBOLS;
         int lastCharIndex = input.length() - 1;
         boolean quotesRequiredForSpecialChar = false;
         boolean skipNewline = false;

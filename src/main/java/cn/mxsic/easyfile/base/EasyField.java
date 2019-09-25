@@ -1,9 +1,8 @@
 package cn.mxsic.easyfile.base;
 
-import cn.mxsic.easyfile.utils.ObjectUtils;
-
 import java.lang.reflect.Field;
 
+import cn.mxsic.easyfile.utils.ObjectUtils;
 import lombok.Data;
 
 /**
@@ -13,7 +12,7 @@ import lombok.Data;
  * @date 19 08 26
  */
 @Data
-public class DocField {
+public class EasyField {
     /**
      * class field
      */

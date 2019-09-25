@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import cn.mxsic.easyfile.base.FileType;
+import cn.mxsic.easyfile.base.EasyFileConstant.Excel.FileType;
 import cn.mxsic.easyfile.csv.CsvExportHelper;
 import cn.mxsic.easyfile.csv.CsvImportHelper;
 import cn.mxsic.easyfile.excel.ExcelExportHelper;

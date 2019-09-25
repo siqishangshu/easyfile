@@ -1,7 +1,5 @@
 package cn.mxsic.easyfile.base;
 
-import cn.mxsic.easyfile.exception.ExportException;
-
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -19,6 +17,9 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+
+import cn.mxsic.easyfile.base.EasyFileConstant.Excel.FileType;
+import cn.mxsic.easyfile.exception.ExportException;
 
 /**
  * Function: MultiFileMerge <br>

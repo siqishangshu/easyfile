@@ -1,16 +1,16 @@
 package cn.mxsic.easyfile.base;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import cn.mxsic.easyfile.annotation.Cols;
 import cn.mxsic.easyfile.annotation.Format;
 import cn.mxsic.easyfile.annotation.Title;
 import cn.mxsic.easyfile.annotation.Transient;
 import cn.mxsic.easyfile.exception.ExportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * 获取注解信息
@@ -23,8 +23,8 @@ public final class AnnotationHelper {
      * 获取导入导出POJO类的
      * 注解信息
      */
-    private static List<DocField> getFields(Class clazz, ScopeType scopeType) {
-        List<DocField> fieldList = new ArrayList<>();
+    private static List<EasyField> getFields(Class clazz, ScopeType scopeType) {
+        List<EasyField> fieldList = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             Transient transient_ = field.getAnnotation(Transient.class);
@@ -33,7 +33,7 @@ public final class AnnotationHelper {
                     continue;
                 }
             }
-            DocField docField = new DocField();
+            EasyField docField = new EasyField();
             field.setAccessible(true);
             docField.setField(field);
 
@@ -59,21 +59,21 @@ public final class AnnotationHelper {
     /**
      * 获取表格头
      */
-    public static DocField[] getAnnotationFields(Class clazz, ScopeType scopeType) {
-        List<DocField> fieldList = AnnotationHelper.getFields(clazz, scopeType);
+    public static EasyField[] getAnnotationFields(Class clazz, ScopeType scopeType) {
+        List<EasyField> fieldList = AnnotationHelper.getFields(clazz, scopeType);
         if (fieldList.isEmpty()) {
             throw new ExportException("export nothing");
         }
         int maxCol = fieldList.size();
-        DocField maxField = fieldList.stream().filter(f -> ObjectUtils.isNotEmpty(f.getCols())).max(
-                Comparator.comparing(DocField::getCols)).orElse(null);
+        EasyField maxField = fieldList.stream().filter(f -> ObjectUtils.isNotEmpty(f.getCols())).max(
+                Comparator.comparing(EasyField::getCols)).orElse(null);
         if (ObjectUtils.isNotEmpty(maxField)) {
             maxCol = Math.max(maxCol, maxField.getCols());
         }
-        DocField[] fieldArr = new DocField[maxCol];
-        List<DocField> temp = new ArrayList<>();
+        EasyField[] fieldArr = new EasyField[maxCol];
+        List<EasyField> temp = new ArrayList<>();
 
-        for (DocField docField : fieldList) {
+        for (EasyField docField : fieldList) {
             if (ObjectUtils.isNotEmpty(docField.getCols())) {
                 if (ObjectUtils.isEmpty(fieldArr[docField.getCols() - 1])) {
                     fieldArr[docField.getCols() - 1] = docField;
@@ -83,7 +83,7 @@ public final class AnnotationHelper {
             temp.add(docField);
         }
         int index = 0;
-        for (DocField docField : temp) {
+        for (EasyField docField : temp) {
             while (ObjectUtils.isNotEmpty(fieldArr[index])) {
                 index++;
             }
@@ -99,7 +99,7 @@ public final class AnnotationHelper {
      *
      * @param docFields 获出需要导出字段title数组
      */
-    public static String[] getHeadFieldTitles(DocField[] docFields) {
+    public static String[] getHeadFieldTitles(EasyField[] docFields) {
         String[] headTitles = new String[docFields.length];
         for (int i = 0; i < docFields.length; i++) {
             if (ObjectUtils.isNotEmpty(docFields[i])) {

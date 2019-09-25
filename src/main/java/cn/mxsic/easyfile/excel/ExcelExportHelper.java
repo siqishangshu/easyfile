@@ -1,12 +1,5 @@
 package cn.mxsic.easyfile.excel;
 
-import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.DocField;
-import cn.mxsic.easyfile.base.FileType;
-import cn.mxsic.easyfile.base.ScopeType;
-import cn.mxsic.easyfile.exception.ExportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
-
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -20,6 +13,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+
+import cn.mxsic.easyfile.base.AnnotationHelper;
+import cn.mxsic.easyfile.base.EasyField;
+import cn.mxsic.easyfile.base.EasyFileConstant.Excel.FileType;
+import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.exception.ExportException;
+import cn.mxsic.easyfile.utils.ObjectUtils;
 
 /**
  * @author siqishangshu
@@ -51,7 +51,7 @@ public class ExcelExportHelper<T> {
     /**
      * 获取注解
      */
-    private DocField[] docFields;
+    private EasyField[] docFields;
     /**
      * 写入的总记录数
      */
@@ -161,7 +161,7 @@ public class ExcelExportHelper<T> {
      */
     private void writeRow(T t, Row row) throws IllegalAccessException {
         for (int i = 0; i < this.docFields.length; i++) {
-            DocField docField = this.docFields[i];
+            EasyField docField = this.docFields[i];
             Cell cell = row.createCell(i);
             if (ObjectUtils.isNotEmpty(docField)) {
                 String value;

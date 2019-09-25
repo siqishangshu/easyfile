@@ -24,8 +24,9 @@ import java.util.Map;
 
 import cn.mxsic.easyfile.base.AnnotationHelper;
 import cn.mxsic.easyfile.base.DataTypeProcessor;
-import cn.mxsic.easyfile.base.DocField;
-import cn.mxsic.easyfile.base.FileType;
+import cn.mxsic.easyfile.base.EasyField;
+import cn.mxsic.easyfile.base.EasyFileConstant;
+import cn.mxsic.easyfile.base.EasyFileConstant.Excel.FileType;
 import cn.mxsic.easyfile.base.ScopeType;
 import cn.mxsic.easyfile.exception.ImportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
@@ -44,7 +45,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
 
     private int indexRow = 1;
 
-    private Map<String, DocField> docFieldMap = new HashMap<>();
+    private Map<String, EasyField> docFieldMap = new HashMap<>();
 
     private Workbook workbook;
 
@@ -178,7 +179,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      * 做数据映射
      */
     private List<T> getResult() throws IllegalAccessException {
-        DocField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
+        EasyField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
         for (List<List<String>> sheetMatrix : this.dataMatrix) {
             for (int i = 0; i < sheetMatrix.size(); i++) {
                 if (i >= this.indexRow) {
@@ -195,7 +196,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
                             this.titles[j] = firstRow.get(j);
                         }
                     }
-                    for (DocField docField : docFields) {
+                    for (EasyField docField : docFields) {
                         if (ObjectUtils.isNotEmpty(docField)) {
                             if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.readTitle()) {
                                 this.docFieldMap.put(docField.getTitle(), docField);
@@ -217,7 +218,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             return;
         }
         String field = this.titles[j];
-        DocField docField = this.docFieldMap.get(field);
+        EasyField docField = this.docFieldMap.get(field);
         if (ObjectUtils.isEmpty(docField)) {
             return;
         }
@@ -266,7 +267,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     private String getCellStringVal(Cell cell) {
         //无数据时
         if (ObjectUtils.isEmpty(cell)) {
-            return "";
+            return EasyFileConstant.Excel.EMPTY;
         }
         CellType cellType = cell.getCellTypeEnum();
         switch (cellType) {
@@ -281,11 +282,11 @@ public class ExcelImportHelper<T> extends DefaultHandler {
                         .createFormulaEvaluator().evaluate(cell);
                 return cellValue.formatAsString();
             case BLANK:
-                return "";
+                return EasyFileConstant.Excel.EMPTY;
             case ERROR:
                 return String.valueOf(cell.getErrorCellValue());
             default:
-                return "";
+                return EasyFileConstant.Excel.EMPTY;
         }
     }
 }
