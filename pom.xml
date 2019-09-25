@@ -4,17 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.siqishangshu</groupId>
+    <groupId>cn.mxisc</groupId>
     <artifactId>easyfile</artifactId>
     <version>1.0.0-RELEASE</version>
 
     <packaging>jar</packaging>
     <name>EasyFile</name>
     <description>Easy File Tool</description>
-    <url>https://github.com/siqishangshu/EasyFile</url>
+    <url>http://mxsic.cn/easyfile</url>
     <organization>
-        <name>si qi hang shu Software, Inc.</name>
-        <url>http://www.siqishangshu.com</url>
+        <name>Mx sic Software, Inc.</name>
+        <url>http://www.mxsic.cn</url>
     </organization>
     <licenses>
         <license>
@@ -23,7 +23,7 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/siqishangshu/worktool</url>
+        <url>mxsic.cn</url>
     </scm>
 
     <properties>
