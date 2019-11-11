@@ -3,7 +3,6 @@ package cn.mxsic.easyfile.excel;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CellValue;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,12 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
 import cn.mxsic.easyfile.base.DataTypeProcessor;
-import cn.mxsic.easyfile.base.EasyField;
-import cn.mxsic.easyfile.base.EasyFileConstant;
-import cn.mxsic.easyfile.base.EasyFileConstant.Excel.FileType;
-import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.base.DocField;
+import cn.mxsic.easyfile.base.FileType;
 import cn.mxsic.easyfile.exception.ImportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
 
@@ -43,13 +41,18 @@ public class ExcelImportHelper<T> extends DefaultHandler {
 
     private List<T> data = new ArrayList<>();
 
-    private int indexRow = 1;
+    private List<List<T>> sheetData = new ArrayList<>();
 
-    private Map<String, EasyField> docFieldMap = new HashMap<>();
+    private int headRow = 0;
+
+    private boolean sameHead = false;
+
+    private Map<String, DocField> docFieldMap = new HashMap<>();
 
     private Workbook workbook;
 
     private String[] titles;
+
     /**
      * 设置保留多少位小数
      * 取消科学计数法
@@ -60,10 +63,11 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      *
      * @param file
      * @param tClass
-     * @param indexRow
+     * @param headRow
      * @throws FileNotFoundException
      */
-    public ExcelImportHelper(File file, FileType fileType, Class<T> tClass, int indexRow) {
+    @Deprecated
+    public ExcelImportHelper(File file, FileType fileType, Class<T> tClass, int headRow) {
         try {
             if (fileType.equals(FileType.XLS)) {
                 workbook = new HSSFWorkbook(new FileInputStream(file));
@@ -78,18 +82,20 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             throw new ImportException(e);
         }
         this.tClass = tClass;
-        this.indexRow = indexRow - 1;
+        this.headRow = headRow - 1;
     }
+
 
     /**
      *
      * @param inputStream
      * @param fileType
      * @param tClass
-     * @param indexRow
+     * @param headRow
      * @throws IOException
      */
-    public ExcelImportHelper(InputStream inputStream, FileType fileType, Class<T> tClass, int indexRow) {
+    @Deprecated
+    public ExcelImportHelper(InputStream inputStream, FileType fileType, Class<T> tClass, int headRow) {
         try {
             if (fileType.equals(FileType.XLS)) {
                 workbook = new HSSFWorkbook(inputStream);
@@ -104,7 +110,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             throw new ImportException(e);
         }
         this.tClass = tClass;
-        this.indexRow = indexRow - 1;
+        this.headRow = headRow - 1;
     }
 
     /**
@@ -163,9 +169,22 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             loadDataMatrix();
             return getResult();
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ImportException(e);
         }
+    }
+
+    /**
+     * set if all the sheet have the same format head or not
+     */
+    public void setEverySheetHaveSameHead(boolean sameHead) {
+        this.sameHead = sameHead;
+    }
+
+    /**
+     * set first sheet head format data start line index
+     */
+    public void setFirstSheetHeadLine(int headRow) {
+        this.headRow = headRow - 1;
     }
 
     /**
@@ -176,36 +195,50 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     }
 
     /**
+     * import data as sheet
+     */
+    public List<List<T>> getSheetData() {
+        return this.sheetData;
+    }
+
+    /**
      * 做数据映射
      */
     private List<T> getResult() throws IllegalAccessException {
-        EasyField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
-        for (List<List<String>> sheetMatrix : this.dataMatrix) {
-            for (int i = 0; i < sheetMatrix.size(); i++) {
-                if (i >= this.indexRow) {
-                    T t = ObjectUtils.getInstance(this.tClass);
-                    for (int j = 0; j < sheetMatrix.get(i).size(); j++) {
-                        fillUp(t, j, sheetMatrix.get(i).get(j));
-                    }
-                    data.add(t);
-                } else if (this.indexRow - 1 == i) {
-                    List<String> firstRow = sheetMatrix.get(i);
-                    this.titles = new String[firstRow.size()];
-                    for (int j = 0; j < firstRow.size(); j++) {
-                        if (ObjectUtils.isNotEmpty(firstRow.get(j))) {
-                            this.titles[j] = firstRow.get(j);
-                        }
-                    }
-                    for (EasyField docField : docFields) {
-                        if (ObjectUtils.isNotEmpty(docField)) {
-                            if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.readTitle()) {
-                                this.docFieldMap.put(docField.getTitle(), docField);
-                            }
-                            this.docFieldMap.put(docField.getField().getName(), docField);
-                        }
+        DocField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
+        for (DocField docField : docFields) {
+            if (ObjectUtils.isNotEmpty(docField)) {
+                if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.importTitle()) {
+                    this.docFieldMap.put(docField.getTitle(), docField);
+                }
+                this.docFieldMap.put(docField.getField().getName(), docField);
+            }
+        }
+        for (int i = 0; i < this.dataMatrix.size(); i++) {
+            int sheetHeadLine = 1;
+            if (i == 0) {
+                List<String> head = this.dataMatrix.get(i).get(this.headRow);
+                this.titles = new String[head.size()];
+                for (int j = 0; j < head.size(); j++) {
+                    if (ObjectUtils.isNotEmpty(head.get(j))) {
+                        this.titles[j] = head.get(j);
                     }
                 }
+                sheetHeadLine = this.headRow + 1;
             }
+            if (this.sameHead) {
+                sheetHeadLine = this.headRow + 1;
+            }
+            List<T> list = new ArrayList<>();
+            for (int j = sheetHeadLine; j < this.dataMatrix.get(i).size(); j++) {
+                T t = ObjectUtils.getInstance(this.tClass);
+                for (int k = 0; k < this.dataMatrix.get(i).get(j).size(); k++) {
+                    fillUp(t, k, this.dataMatrix.get(i).get(j).get(k));
+                }
+                list.add(t);
+                data.add(t);
+            }
+            sheetData.add(list);
         }
         return data;
     }
@@ -218,11 +251,11 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             return;
         }
         String field = this.titles[j];
-        EasyField docField = this.docFieldMap.get(field);
+        DocField docField = this.docFieldMap.get(field);
         if (ObjectUtils.isEmpty(docField)) {
             return;
         }
-        if (docField.readFormat()) {
+        if (docField.importFormat()) {
             docField.getField().set(t, docField.getFormatter().read(v));
         } else {
             docField.getField().set(t, DataTypeProcessor.handle(v, docField.getField().getType().getSimpleName()));
@@ -238,12 +271,9 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             //读取第一个工作页sheet
             ArrayList<List<String>> sheetMatrix = new ArrayList<>();
             Sheet sheet = workbook.getSheetAt(i);
-            //第一行为标题
             if (sheet.getLastRowNum() > 0) {
-                /**
-                 * head line;
-                 */
-                Row head = sheet.getRow(0);
+                //第一行为标题
+                Row head = sheet.getRow(this.headRow);
                 int cellSize = head.getLastCellNum();
                 for (int rowNum = 0; rowNum <= sheet.getLastRowNum(); rowNum++) {
                     Row row = sheet.getRow(rowNum);
@@ -267,7 +297,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     private String getCellStringVal(Cell cell) {
         //无数据时
         if (ObjectUtils.isEmpty(cell)) {
-            return EasyFileConstant.Excel.EMPTY;
+            return new String();
         }
         CellType cellType = cell.getCellTypeEnum();
         switch (cellType) {
@@ -278,15 +308,13 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             case BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
             case FORMULA:
-                CellValue cellValue = cell.getSheet().getWorkbook().getCreationHelper()
-                        .createFormulaEvaluator().evaluate(cell);
-                return cellValue.formatAsString();
+                return cell.getCellFormula();
             case BLANK:
-                return EasyFileConstant.Excel.EMPTY;
+                return new String();
             case ERROR:
                 return String.valueOf(cell.getErrorCellValue());
             default:
-                return EasyFileConstant.Excel.EMPTY;
+                return new String();
         }
     }
 }

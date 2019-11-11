@@ -1,13 +1,13 @@
 package cn.mxsic.easyfile.annotation;
 
-import cn.mxsic.easyfile.base.Formatter;
-import cn.mxsic.easyfile.base.ScopeType;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import cn.mxsic.easyfile.base.Formatter;
 
 /**
  * Function: Title <br>

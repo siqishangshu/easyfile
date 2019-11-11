@@ -1,11 +1,10 @@
 package cn.mxsic.easyfile;
 
+import java.text.ParseException;
+import java.util.Date;
+
 import cn.mxsic.easyfile.base.Formatter;
 import cn.mxsic.easyfile.utils.DateUtils;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Function: DateTimeFormater <br>
@@ -14,17 +13,17 @@ import java.util.Date;
  * @date: 2019-08-15 17:28:00
  */
 public class DateTimeFormater implements Formatter<Date> {
-   private static   SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.DATE_FORMAT_DAY);
+
 
     @Override
     public String write(Date obj) {
-        return simpleDateFormat.format(obj);
+        return DateUtils.parseString(obj,DateUtils.DATE_FORMAT_SEC);
     }
 
     @Override
     public Date read(String str) {
         try {
-            return simpleDateFormat.parse(str);
+            return DateUtils.parseDate(str, DateUtils.DATE_FORMAT_SEC);
         } catch (ParseException e) {
             e.printStackTrace();
         }

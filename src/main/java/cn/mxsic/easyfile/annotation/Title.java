@@ -1,7 +1,5 @@
 package cn.mxsic.easyfile.annotation;
 
-import cn.mxsic.easyfile.base.ScopeType;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

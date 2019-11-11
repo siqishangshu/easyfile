@@ -1,4 +1,4 @@
-package cn.mxsic.easyfile.base;
+package cn.mxsic.easyfile.annotation;
 
 /**
  * Function: ExportScope <br>

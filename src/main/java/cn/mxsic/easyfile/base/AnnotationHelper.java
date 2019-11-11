@@ -7,8 +7,10 @@ import java.util.List;
 
 import cn.mxsic.easyfile.annotation.Cols;
 import cn.mxsic.easyfile.annotation.Format;
+import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.annotation.Title;
 import cn.mxsic.easyfile.annotation.Transient;
+import cn.mxsic.easyfile.annotation.Unravel;
 import cn.mxsic.easyfile.exception.ExportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
 
@@ -23,8 +25,8 @@ public final class AnnotationHelper {
      * 获取导入导出POJO类的
      * 注解信息
      */
-    private static List<EasyField> getFields(Class clazz, ScopeType scopeType) {
-        List<EasyField> fieldList = new ArrayList<>();
+    private static List<DocField> getFields(Class clazz, ScopeType scopeType) {
+        List<DocField> fieldList = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             Transient transient_ = field.getAnnotation(Transient.class);
@@ -33,10 +35,9 @@ public final class AnnotationHelper {
                     continue;
                 }
             }
-            EasyField docField = new EasyField();
+            DocField docField = new DocField();
             field.setAccessible(true);
             docField.setField(field);
-
             Title title = field.getAnnotation(Title.class);
             if (ObjectUtils.isNotEmpty(title)) {
                 docField.setTitle(title.value());
@@ -51,6 +52,10 @@ public final class AnnotationHelper {
                 docField.setFormatter(ObjectUtils.getInstance(format.value()));
                 docField.setFormatScope(format.scopeType());
             }
+            Unravel unravel = field.getAnnotation(Unravel.class);
+            if (ObjectUtils.isNotEmpty(unravel)) {
+                docField.setUnravelList(getFields(field.getDeclaringClass(),scopeType));
+            }
             fieldList.add(docField);
         }
         return fieldList;
@@ -59,21 +64,21 @@ public final class AnnotationHelper {
     /**
      * 获取表格头
      */
-    public static EasyField[] getAnnotationFields(Class clazz, ScopeType scopeType) {
-        List<EasyField> fieldList = AnnotationHelper.getFields(clazz, scopeType);
+    public static DocField[] getAnnotationFields(Class clazz, ScopeType scopeType) {
+        List<DocField> fieldList = AnnotationHelper.getFields(clazz, scopeType);
         if (fieldList.isEmpty()) {
             throw new ExportException("export nothing");
         }
         int maxCol = fieldList.size();
-        EasyField maxField = fieldList.stream().filter(f -> ObjectUtils.isNotEmpty(f.getCols())).max(
-                Comparator.comparing(EasyField::getCols)).orElse(null);
+        DocField maxField = fieldList.stream().filter(f -> ObjectUtils.isNotEmpty(f.getCols())).max(
+                Comparator.comparing(DocField::getCols)).orElse(null);
         if (ObjectUtils.isNotEmpty(maxField)) {
             maxCol = Math.max(maxCol, maxField.getCols());
         }
-        EasyField[] fieldArr = new EasyField[maxCol];
-        List<EasyField> temp = new ArrayList<>();
+        DocField[] fieldArr = new DocField[maxCol];
+        List<DocField> temp = new ArrayList<>();
 
-        for (EasyField docField : fieldList) {
+        for (DocField docField : fieldList) {
             if (ObjectUtils.isNotEmpty(docField.getCols())) {
                 if (ObjectUtils.isEmpty(fieldArr[docField.getCols() - 1])) {
                     fieldArr[docField.getCols() - 1] = docField;
@@ -83,7 +88,7 @@ public final class AnnotationHelper {
             temp.add(docField);
         }
         int index = 0;
-        for (EasyField docField : temp) {
+        for (DocField docField : temp) {
             while (ObjectUtils.isNotEmpty(fieldArr[index])) {
                 index++;
             }
@@ -99,11 +104,11 @@ public final class AnnotationHelper {
      *
      * @param docFields 获出需要导出字段title数组
      */
-    public static String[] getHeadFieldTitles(EasyField[] docFields) {
+    public static String[] getHeadFieldTitles(DocField[] docFields) {
         String[] headTitles = new String[docFields.length];
         for (int i = 0; i < docFields.length; i++) {
             if (ObjectUtils.isNotEmpty(docFields[i])) {
-                if (docFields[i].writeTitle()) {
+                if (docFields[i].exportTitle()) {
                     headTitles[i] = docFields[i].getTitle();
                 } else {
                     headTitles[i] = docFields[i].getField().getName();

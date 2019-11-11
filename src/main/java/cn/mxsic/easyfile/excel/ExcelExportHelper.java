@@ -1,23 +1,25 @@
 package cn.mxsic.easyfile.excel;
 
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.util.IOUtils;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
+import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.EasyField;
-import cn.mxsic.easyfile.base.EasyFileConstant.Excel.FileType;
-import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.base.DocField;
+import cn.mxsic.easyfile.base.FileType;
 import cn.mxsic.easyfile.exception.ExportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
 
@@ -51,11 +53,15 @@ public class ExcelExportHelper<T> {
     /**
      * 获取注解
      */
-    private EasyField[] docFields;
+    private DocField[] docFields;
     /**
      * 写入的总记录数
      */
     private int rowCounter = 0;
+    /**
+     * 描述信息
+     */
+    private List<List<String>> describes = new ArrayList<>();
 
 
     public ExcelExportHelper(Class<T> tClass, String prefix, FileType fileType) {
@@ -78,19 +84,23 @@ public class ExcelExportHelper<T> {
         this.suffix = "." + FileType.XLSX.getType();
     }
 
+    public void setDescribe(List<List<String>> describes) {
+        this.describes = describes;
+    }
+
     /**
      * 导出文件
      * NOTE:max size 65535*3
      */
     public File export(List<T> data) {
-        if (data != null && data.size() > MAX_SHEET_RECORDS_COUNT * MAX_SHEET) {
+        if (data != null && data.size() + describes.size() > MAX_SHEET_RECORDS_COUNT * MAX_SHEET) {
             throw new ExportException("Over export date max size:[" + MAX_SHEET_RECORDS_COUNT * MAX_SHEET + "]");
         }
         this.docFields = AnnotationHelper.getAnnotationFields(tClass, ScopeType.EXPORT);
         Workbook workbook;
         FileOutputStream fos;
         if (this.suffix.toLowerCase().endsWith(FileType.XLSX.getType())) {
-            workbook = new XSSFWorkbook();
+            workbook = new SXSSFWorkbook();
         } else if (this.suffix.toLowerCase().endsWith(FileType.XLS.getType())) {
             workbook = new HSSFWorkbook();
         } else {
@@ -98,17 +108,25 @@ public class ExcelExportHelper<T> {
         }
         try {
             int sheetCounter = 1;
-            Sheet sheet = workbook.createSheet("sheet-" + sheetCounter);
+            Sheet sheet = workbook.createSheet("Page_" + sheetCounter);
             this.rowCounter = 0;
+            /**
+             * 描述信息头。
+             */
+            for (List<String> describe : describes) {
+                Row desc = sheet.createRow(this.rowCounter);
+                for (int i = 0; i < describe.size(); i++) {
+                    desc.createCell(i).setCellValue(describe.get(i));
+                }
+                this.rowCounter++;
+            }
             String[] title = AnnotationHelper.getHeadFieldTitles(this.docFields);
             Row titleRow = sheet.createRow(this.rowCounter);
             for (int i = 0; i < title.length; i++) {
                 titleRow.createCell(i).setCellValue(title[i]);
             }
+
             for (T t : data) {
-                /**
-                 * todo MultiFileMerge will solve the memory problem. every sheet as a file, in the end merge them.
-                 */
                 if (this.rowCounter != 0 && this.rowCounter % MAX_SHEET_RECORDS_COUNT == 0) {
                     sheetCounter++;
                     //创建sheet
@@ -161,14 +179,14 @@ public class ExcelExportHelper<T> {
      */
     private void writeRow(T t, Row row) throws IllegalAccessException {
         for (int i = 0; i < this.docFields.length; i++) {
-            EasyField docField = this.docFields[i];
+            DocField docField = this.docFields[i];
             Cell cell = row.createCell(i);
             if (ObjectUtils.isNotEmpty(docField)) {
                 String value;
-                if (docField.writeFormat()) {
+                if (docField.exportFormat()) {
                     value = docField.getFormatter().write(docField.getField().get(t));
                 } else {
-                    value = String.valueOf(docField.getField().get(t));
+                    value = docField.getField().get(t) == null ? "" : String.valueOf(docField.getField().get(t));
                 }
                 cell.setCellValue(value);
             }

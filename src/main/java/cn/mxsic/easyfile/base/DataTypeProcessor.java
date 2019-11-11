@@ -1,7 +1,5 @@
 package cn.mxsic.easyfile.base;
 
-import cn.mxsic.easyfile.utils.DateUtils;
-
 import java.math.BigDecimal;
 
 /**
@@ -25,8 +23,7 @@ public enum DataTypeProcessor {
     BYTE("java.lang.Byte"),
     BOL("boolean"),
     BOOLEAN("java.lang.Boolean"),
-    BIG_DECIMAL("java.math.BigDecimal"),
-    DATE("java.util.Date");
+    BIG_DECIMAL("java.math.BigDecimal");
 
     private String simpleName;
 
@@ -36,20 +33,38 @@ public enum DataTypeProcessor {
 
     public static Object handle(String v, String simpleName) {
         if (DataTypeProcessor.INT.simpleName.equalsIgnoreCase(simpleName)) {
+            if (v.contains(CsvExcelConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            }
             return Integer.parseInt(v);
         } else if (DataTypeProcessor.INTEGER.simpleName.equalsIgnoreCase(simpleName)) {
+            if (v.contains(CsvExcelConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            }
             return Integer.parseInt(v);
         } else if (DataTypeProcessor.LON.simpleName.equalsIgnoreCase(simpleName)) {
+            if (v.contains(CsvExcelConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            }
             return Long.parseLong(v);
         } else if (DataTypeProcessor.LONG.simpleName.equalsIgnoreCase(simpleName)) {
+            if (v.contains(CsvExcelConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            }
             return Long.parseLong(v);
         } else if (DataTypeProcessor.DOU.simpleName.equalsIgnoreCase(simpleName)) {
             return Double.parseDouble(v);
         } else if (DataTypeProcessor.DOUBLE.simpleName.equalsIgnoreCase(simpleName)) {
             return Double.parseDouble(v);
         } else if (DataTypeProcessor.SHO.simpleName.equalsIgnoreCase(simpleName)) {
+            if (v.contains(CsvExcelConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            }
             return Short.parseShort(v);
         } else if (DataTypeProcessor.SHORT.simpleName.equalsIgnoreCase(simpleName)) {
+            if (v.contains(CsvExcelConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            }
             return Short.parseShort(v);
         } else if (DataTypeProcessor.STR.simpleName.equalsIgnoreCase(simpleName)) {
             return String.valueOf(v);
@@ -65,8 +80,6 @@ public enum DataTypeProcessor {
             return Boolean.parseBoolean(v);
         } else if (DataTypeProcessor.BIG_DECIMAL.simpleName.equalsIgnoreCase(simpleName)) {
             return BigDecimal.valueOf(Double.parseDouble(v));
-        } else if (DataTypeProcessor.DATE.simpleName.equalsIgnoreCase(simpleName)) {
-            return DateUtils.read(v);
         }
         /**
          * return null will not case cost Exception

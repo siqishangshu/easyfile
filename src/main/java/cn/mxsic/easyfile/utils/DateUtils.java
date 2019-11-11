@@ -3,6 +3,7 @@ package cn.mxsic.easyfile.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -61,7 +62,7 @@ public class DateUtils {
             "(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d\\.\\d{3}Z$";
 
 
-    public static Date read(String str){
+    public static Date read(String str) {
         str = str.trim();
         SimpleDateFormat sdf = null;
         if (isMatched(str, DATE_REG)) {
@@ -102,5 +103,25 @@ public class DateUtils {
     public static boolean isMatched(String pattern, String reg) {
         Pattern compile = Pattern.compile(reg);
         return compile.matcher(pattern).matches();
+    }
+
+    public static String parseString(Date date, String pattern) {
+        if (date == null) {
+            return null;
+        }
+        SimpleDateFormat ft = new SimpleDateFormat(pattern);
+        return ft.format(date);
+    }
+
+    public static Date parseDate(String date, String pattern) throws ParseException {
+        if (date == null) {
+            return null;
+        }
+        SimpleDateFormat ft = new SimpleDateFormat(pattern);
+        return ft.parse(date);
+    }
+
+    public static Date getNow() {
+        return Calendar.getInstance().getTime();
     }
 }

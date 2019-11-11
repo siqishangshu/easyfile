@@ -1,5 +1,6 @@
 package cn.mxsic.easyfile.csv;
 
+
 import org.apache.poi.util.IOUtils;
 
 import java.io.BufferedReader;
@@ -15,11 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.EasyFileConstant;
+import cn.mxsic.easyfile.base.CsvExcelConstant;
 import cn.mxsic.easyfile.base.DataTypeProcessor;
-import cn.mxsic.easyfile.base.EasyField;
-import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.base.DocField;
 import cn.mxsic.easyfile.exception.ImportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
 
@@ -48,12 +49,33 @@ public class CsvImportHelper<T> {
     /**
      * 表头映射
      */
-    private Map<String, EasyField> docFieldMap = new HashMap<>();
+    private Map<String, DocField> docFieldMap = new HashMap<>();
     /**
      * 表头
      */
     private String[] titles;
 
+    /**
+     * 头的行数据
+     */
+    private int headRow = 0;
+
+    public CsvImportHelper(InputStream inputStream, Class<T> tClass, int headRow) {
+        this.reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
+        this.tClass = tClass;
+        this.headRow = headRow - 1;
+    }
+
+    public CsvImportHelper(File file, Class<T> tClass, int headRow) {
+        try {
+            InputStream inputStream = new FileInputStream(file);
+            this.reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
+            this.tClass = tClass;
+            this.headRow = headRow - 1;
+        } catch (FileNotFoundException e) {
+            throw new ImportException(e);
+        }
+    }
 
     public CsvImportHelper(InputStream inputStream, Class<T> tClass) {
         this.reader = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()));
@@ -99,22 +121,22 @@ public class CsvImportHelper<T> {
         if (this.dataMatrix.isEmpty()) {
             return data;
         }
-        EasyField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
+        DocField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
 
-        List<String> firstRow = this.dataMatrix.get(0);
+        List<String> firstRow = this.dataMatrix.get(this.headRow);
         this.titles = new String[firstRow.size()];
         for (int i = 0; i < firstRow.size(); i++) {
             this.titles[i] = firstRow.get(i);
         }
-        for (EasyField docField : docFields) {
+        for (DocField docField : docFields) {
             if (ObjectUtils.isNotEmpty(docField)) {
-                if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.readTitle()) {
+                if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.importTitle()) {
                     this.docFieldMap.put(docField.getTitle(), docField);
                 }
                 this.docFieldMap.put(docField.getField().getName(), docField);
             }
         }
-        for (int i = 1; i < this.dataMatrix.size(); i++) {
+        for (int i = this.headRow + 1; i < this.dataMatrix.size(); i++) {
             fullUp(this.dataMatrix.get(i));
         }
         return data;
@@ -128,11 +150,11 @@ public class CsvImportHelper<T> {
                 continue;
             }
             String field = this.titles[i];
-            EasyField docField = this.docFieldMap.get(field);
+            DocField docField = this.docFieldMap.get(field);
             if (ObjectUtils.isEmpty(docField)) {
                 continue;
             }
-            if (docField.readFormat()) {
+            if (docField.importFormat()) {
                 docField.getField().set(t, docField.getFormatter().read(value));
             } else {
                 docField.getField().set(t, DataTypeProcessor.handle(value, docField.getField().getType().getSimpleName()));
@@ -148,23 +170,26 @@ public class CsvImportHelper<T> {
     private void loadMatrix() throws IOException {
         String pre = "";
         for (String str = this.reader.readLine(); str != null; str = this.reader.readLine()) {
-            if (ObjectUtils.isEmpty(str)) {
-                continue;
-            }
+            /**
+             * 允许有空行。占行。
+             */
+//            if (ObjectUtils.isEmpty(str)) {
+//                continue;
+//            }
             if (oneRow(pre + str)) {
                 List<String> list = new ArrayList<>();
                 list.addAll(encode(pre + str));
                 dataMatrix.add(list);
                 pre = "";
             } else {
-                pre = str + EasyFileConstant.Csv.END_OF_LINE_SYMBOLS;
+                pre = str + CsvExcelConstant.END_OF_LINE_SYMBOLS;
             }
 
         }
     }
 
     private boolean oneRow(String s) {
-        return s.split(String.valueOf(EasyFileConstant.Csv.QUOTE_CHAR)).length % 2 == 1;
+        return s.split(String.valueOf(CsvExcelConstant.QUOTE_CHAR)).length % 2 == 1;
     }
 
     /**
@@ -179,8 +204,8 @@ public class CsvImportHelper<T> {
     public List<String> encode(final String input) {
         List<String> list = new ArrayList<>();
         StringBuilder currentColumn = new StringBuilder();
-        char delimiter = EasyFileConstant.Csv.DELIMITER;
-        char quote = EasyFileConstant.Csv.QUOTE_CHAR;
+        char delimiter = CsvExcelConstant.DELIMITER;
+        char quote = CsvExcelConstant.QUOTE_CHAR;
         int hasQuotes = 0;
         char pre = ' ';
         for (char c : input.toCharArray()) {

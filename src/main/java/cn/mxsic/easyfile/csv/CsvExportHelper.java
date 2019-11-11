@@ -8,10 +8,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
+import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.EasyField;
-import cn.mxsic.easyfile.base.EasyFileConstant;
-import cn.mxsic.easyfile.base.ScopeType;
+import cn.mxsic.easyfile.base.CsvExcelConstant;
+import cn.mxsic.easyfile.base.DocField;
+import cn.mxsic.easyfile.base.FileType;
 import cn.mxsic.easyfile.exception.ExportException;
 import cn.mxsic.easyfile.utils.ObjectUtils;
 
@@ -34,7 +35,7 @@ public class CsvExportHelper<T> {
     /**
      * 导出标题，及字段信息
      */
-    private EasyField[] docFields;
+    private DocField[] docFields;
 
     /**
      * writer
@@ -68,7 +69,7 @@ public class CsvExportHelper<T> {
 
             this.docFields = AnnotationHelper.getAnnotationFields(tClass, ScopeType.EXPORT);
             this.titles = AnnotationHelper.getHeadFieldTitles(this.docFields);
-            this.file = File.createTempFile(this.prefix, EasyFileConstant.Csv.SUFFIX);
+            this.file = File.createTempFile(this.prefix, FileType.CSV.getSuffix());
             writer = new FileWriter(file);
             /**
              * write the title
@@ -111,17 +112,17 @@ public class CsvExportHelper<T> {
     private void fullUp(T t) throws IOException, IllegalAccessException {
         String[] cells = new String[this.docFields.length];
         for (int i = 0; i < this.docFields.length; i++) {
-            EasyField docField = this.docFields[i];
+            DocField docField = this.docFields[i];
             if (ObjectUtils.isNotEmpty(docField)) {
                 String value;
-                if (docField.writeFormat()) {
+                if (docField.exportFormat()) {
                     value = docField.getFormatter().write(docField.getField().get(t));
                 } else {
                     value = String.valueOf(docField.getField().get(t));
                 }
                 cells[i] = value;
             } else {
-                cells[i] = EasyFileConstant.Csv.EMPTY;
+                cells[i] = CsvExcelConstant.EMPTY;
             }
         }
         writeRow(cells);
@@ -131,10 +132,10 @@ public class CsvExportHelper<T> {
         for (int i = 0; i < cells.length; i++) {
             writer.write(encode(cells[i]));
             if (i < cells.length - 1) {
-                writer.write(EasyFileConstant.Csv.DELIMITER);
+                writer.write(CsvExcelConstant.DELIMITER);
             }
         }
-        writer.write(EasyFileConstant.Csv.END_OF_LINE_SYMBOLS);
+        writer.write(CsvExcelConstant.END_OF_LINE_SYMBOLS);
     }
 
     /**
@@ -147,9 +148,9 @@ public class CsvExportHelper<T> {
      */
     public String encode(final String input) {
         StringBuilder currentColumn = new StringBuilder();
-        char delimiter = EasyFileConstant.Csv.DELIMITER;
-        char quote = EasyFileConstant.Csv.QUOTE_CHAR;
-        String endOfLineSymbols = EasyFileConstant.Csv.END_OF_LINE_SYMBOLS;
+        char delimiter = CsvExcelConstant.DELIMITER;
+        char quote = CsvExcelConstant.QUOTE_CHAR;
+        String endOfLineSymbols = CsvExcelConstant.END_OF_LINE_SYMBOLS;
         int lastCharIndex = input.length() - 1;
         boolean quotesRequiredForSpecialChar = false;
         boolean skipNewline = false;

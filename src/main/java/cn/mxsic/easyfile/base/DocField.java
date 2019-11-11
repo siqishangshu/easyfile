@@ -1,7 +1,11 @@
 package cn.mxsic.easyfile.base;
 
-import java.lang.reflect.Field;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.utils.ObjectUtils;
 import lombok.Data;
 
@@ -12,38 +16,21 @@ import lombok.Data;
  * @date 19 08 26
  */
 @Data
-public class EasyField {
-    /**
-     * class field
-     */
+public class DocField {
+
     private Field field;
-    /**
-     * title in excel
-     */
+
     private String title;
-    /**
-     * title in use scope
-     */
     private ScopeType titleScope;
 
-    /**
-     * cols index
-     */
     private Integer cols;
-    /**
-     * formatter instants
-     */
+
     private Formatter formatter;
-    /**
-     * format scope
-     */
     private ScopeType formatScope;
 
-    /**
-     * use title for read form file
-     * @return
-     */
-    public boolean readTitle() {
+    private List<DocField> unravelList = new ArrayList<>();
+
+    public boolean importTitle() {
         if (ObjectUtils.isEmpty(titleScope) || ObjectUtils.isEmpty(title)) {
             return false;
         }
@@ -53,11 +40,7 @@ public class EasyField {
         return false;
     }
 
-    /**
-     * use title for write to file
-     * @return
-     */
-    public boolean writeTitle() {
+    public boolean exportTitle() {
         if (ObjectUtils.isEmpty(titleScope) || ObjectUtils.isEmpty(title)) {
             return false;
         }
@@ -66,11 +49,8 @@ public class EasyField {
         }
         return false;
     }
-    /**
-     * use formatter for read form file
-     * @return
-     */
-    public boolean readFormat() {
+
+    public boolean importFormat() {
 
         if (ObjectUtils.isEmpty(formatScope) || ObjectUtils.isEmpty(formatter)) {
             return false;
@@ -81,11 +61,7 @@ public class EasyField {
         return false;
     }
 
-    /**
-     * use formatter for write to file
-     * @return
-     */
-    public boolean writeFormat() {
+    public boolean exportFormat() {
         if (ObjectUtils.isEmpty(formatScope) || ObjectUtils.isEmpty(formatter)) {
             return false;
         }
