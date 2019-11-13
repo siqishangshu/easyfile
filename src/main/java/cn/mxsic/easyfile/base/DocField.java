@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.mxsic.easyfile.annotation.ScopeType;
-import cn.mxsic.easyfile.utils.ObjectUtils;
+import cn.mxsic.easyfile.utils.EasyUtils;
 import lombok.Data;
 
 /**
@@ -31,7 +31,7 @@ public class DocField {
     private List<DocField> unravelList = new ArrayList<>();
 
     public boolean importTitle() {
-        if (ObjectUtils.isEmpty(titleScope) || ObjectUtils.isEmpty(title)) {
+        if (EasyUtils.isEmpty(titleScope) || EasyUtils.isEmpty(title)) {
             return false;
         }
         if (titleScope.equals(ScopeType.BOTH) || titleScope.equals(ScopeType.IMPORT)) {
@@ -41,7 +41,7 @@ public class DocField {
     }
 
     public boolean exportTitle() {
-        if (ObjectUtils.isEmpty(titleScope) || ObjectUtils.isEmpty(title)) {
+        if (EasyUtils.isEmpty(titleScope) || EasyUtils.isEmpty(title)) {
             return false;
         }
         if (titleScope.equals(ScopeType.BOTH) || titleScope.equals(ScopeType.EXPORT)) {
@@ -52,7 +52,7 @@ public class DocField {
 
     public boolean importFormat() {
 
-        if (ObjectUtils.isEmpty(formatScope) || ObjectUtils.isEmpty(formatter)) {
+        if (EasyUtils.isEmpty(formatScope) || EasyUtils.isEmpty(formatter)) {
             return false;
         }
         if (formatScope.equals(ScopeType.BOTH) || formatScope.equals(ScopeType.IMPORT)) {
@@ -62,7 +62,7 @@ public class DocField {
     }
 
     public boolean exportFormat() {
-        if (ObjectUtils.isEmpty(formatScope) || ObjectUtils.isEmpty(formatter)) {
+        if (EasyUtils.isEmpty(formatScope) || EasyUtils.isEmpty(formatter)) {
             return false;
         }
         if (formatScope.equals(ScopeType.BOTH) || formatScope.equals(ScopeType.EXPORT)) {

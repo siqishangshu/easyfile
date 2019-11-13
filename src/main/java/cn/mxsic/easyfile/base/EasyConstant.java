@@ -6,7 +6,7 @@ package cn.mxsic.easyfile.base;
  * @author: siqishangshu <br>
  * @date: 2019-09-03 14:10:00
  */
-public class CsvExcelConstant {
+public class EasyConstant {
     /**
      * empty value
      */

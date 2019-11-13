@@ -10,11 +10,11 @@ import java.util.List;
 
 import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.CsvExcelConstant;
+import cn.mxsic.easyfile.base.EasyConstant;
 import cn.mxsic.easyfile.base.DocField;
 import cn.mxsic.easyfile.base.FileType;
 import cn.mxsic.easyfile.exception.ExportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
+import cn.mxsic.easyfile.utils.EasyUtils;
 
 /**
  * @author siqishangshu
@@ -113,7 +113,7 @@ public class CsvExportHelper<T> {
         String[] cells = new String[this.docFields.length];
         for (int i = 0; i < this.docFields.length; i++) {
             DocField docField = this.docFields[i];
-            if (ObjectUtils.isNotEmpty(docField)) {
+            if (EasyUtils.isNotEmpty(docField)) {
                 String value;
                 if (docField.exportFormat()) {
                     value = docField.getFormatter().write(docField.getField().get(t));
@@ -122,7 +122,7 @@ public class CsvExportHelper<T> {
                 }
                 cells[i] = value;
             } else {
-                cells[i] = CsvExcelConstant.EMPTY;
+                cells[i] = EasyConstant.EMPTY;
             }
         }
         writeRow(cells);
@@ -132,10 +132,10 @@ public class CsvExportHelper<T> {
         for (int i = 0; i < cells.length; i++) {
             writer.write(encode(cells[i]));
             if (i < cells.length - 1) {
-                writer.write(CsvExcelConstant.DELIMITER);
+                writer.write(EasyConstant.DELIMITER);
             }
         }
-        writer.write(CsvExcelConstant.END_OF_LINE_SYMBOLS);
+        writer.write(EasyConstant.END_OF_LINE_SYMBOLS);
     }
 
     /**
@@ -148,9 +148,9 @@ public class CsvExportHelper<T> {
      */
     public String encode(final String input) {
         StringBuilder currentColumn = new StringBuilder();
-        char delimiter = CsvExcelConstant.DELIMITER;
-        char quote = CsvExcelConstant.QUOTE_CHAR;
-        String endOfLineSymbols = CsvExcelConstant.END_OF_LINE_SYMBOLS;
+        char delimiter = EasyConstant.DELIMITER;
+        char quote = EasyConstant.QUOTE_CHAR;
+        String endOfLineSymbols = EasyConstant.END_OF_LINE_SYMBOLS;
         int lastCharIndex = input.length() - 1;
         boolean quotesRequiredForSpecialChar = false;
         boolean skipNewline = false;

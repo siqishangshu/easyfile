@@ -2,7 +2,6 @@ package cn.mxsic.easyfile.excel;
 
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -20,8 +19,9 @@ import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
 import cn.mxsic.easyfile.base.DocField;
 import cn.mxsic.easyfile.base.FileType;
+import cn.mxsic.easyfile.base.Preprocessor;
 import cn.mxsic.easyfile.exception.ExportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
+import cn.mxsic.easyfile.utils.EasyUtils;
 
 /**
  * @author siqishangshu
@@ -55,13 +55,22 @@ public class ExcelExportHelper<T> {
      */
     private DocField[] docFields;
     /**
-     * 写入的总记录数
-     */
-    private int rowCounter = 0;
-    /**
      * 描述信息
      */
     private List<List<String>> describes = new ArrayList<>();
+    /**
+     * data
+     */
+    private List<T> data = new ArrayList<>();
+    /**
+     * preprocessor after format
+     */
+    private Preprocessor preprocessor;
+
+    /**
+     * all the data must be string once
+     */
+    private List<List<List<String>>> dataMatrix = new ArrayList<>();
 
 
     public ExcelExportHelper(Class<T> tClass, String prefix, FileType fileType) {
@@ -88,6 +97,43 @@ public class ExcelExportHelper<T> {
         this.describes = describes;
     }
 
+    private void loadMatrix() throws IllegalAccessException {
+        this.docFields = AnnotationHelper.getAnnotationFields(tClass, ScopeType.EXPORT);
+        List<List<String>> sheet = new ArrayList<>();
+        this.dataMatrix.add(sheet);
+        /**
+         * 描述信息头。
+         */
+        for (List<String> describe : describes) {
+            List<String> desc = new ArrayList<>();
+            for (int i = 0; i < describe.size(); i++) {
+                desc.add(describe.get(i));
+            }
+            sheet.add(desc);
+        }
+
+        String[] title = AnnotationHelper.getHeadFieldTitles(this.docFields);
+        List<String> titleRow = new ArrayList<>();
+        for (int i = 0; i < title.length; i++) {
+            titleRow.add(title[i]);
+        }
+        sheet.add(titleRow);
+        for (T t : data) {
+            if (sheet.size() == MAX_SHEET_RECORDS_COUNT) {
+                //创建sheet
+                sheet = new ArrayList<>();
+                this.dataMatrix.add(sheet);
+                //在sheet第一行写出表单的各个字段名
+                titleRow = new ArrayList<>();
+                for (int i = 0; i < title.length; i++) {
+                    titleRow.add(title[i]);
+                }
+                sheet.add(titleRow);
+            }
+            sheet.add(writeRow(t));
+        }
+    }
+
     /**
      * 导出文件
      * NOTE:max size 65535*3
@@ -96,9 +142,7 @@ public class ExcelExportHelper<T> {
         if (data != null && data.size() + describes.size() > MAX_SHEET_RECORDS_COUNT * MAX_SHEET) {
             throw new ExportException("Over export date max size:[" + MAX_SHEET_RECORDS_COUNT * MAX_SHEET + "]");
         }
-        this.docFields = AnnotationHelper.getAnnotationFields(tClass, ScopeType.EXPORT);
         Workbook workbook;
-        FileOutputStream fos;
         if (this.suffix.toLowerCase().endsWith(FileType.XLSX.getType())) {
             workbook = new SXSSFWorkbook();
         } else if (this.suffix.toLowerCase().endsWith(FileType.XLS.getType())) {
@@ -106,51 +150,36 @@ public class ExcelExportHelper<T> {
         } else {
             throw new ExportException("UnSupport file type");
         }
+        this.data = data;
         try {
-            int sheetCounter = 1;
-            Sheet sheet = workbook.createSheet("Page_" + sheetCounter);
-            this.rowCounter = 0;
-            /**
-             * 描述信息头。
-             */
-            for (List<String> describe : describes) {
-                Row desc = sheet.createRow(this.rowCounter);
-                for (int i = 0; i < describe.size(); i++) {
-                    desc.createCell(i).setCellValue(describe.get(i));
-                }
-                this.rowCounter++;
+            loadMatrix();
+            if (preprocessor != null) {
+                this.dataMatrix = this.preprocessor.process(this.dataMatrix);
             }
-            String[] title = AnnotationHelper.getHeadFieldTitles(this.docFields);
-            Row titleRow = sheet.createRow(this.rowCounter);
-            for (int i = 0; i < title.length; i++) {
-                titleRow.createCell(i).setCellValue(title[i]);
-            }
-
-            for (T t : data) {
-                if (this.rowCounter != 0 && this.rowCounter % MAX_SHEET_RECORDS_COUNT == 0) {
-                    sheetCounter++;
-                    //创建sheet
-                    sheet = workbook.createSheet("sheet-" + sheetCounter);
-                    //在sheet第一行写出表单的各个字段名
-                    this.rowCounter = 0;
-                    titleRow = sheet.createRow(this.rowCounter);
-                    for (int i = 0; i < title.length; i++) {
-                        titleRow.createCell(i).setCellValue(title[i]);
-                    }
-                }
-                this.rowCounter++;
-                writeRow(t, sheet.createRow(this.rowCounter));
-            }
-            //写入到文件流中
-            this.file = File.createTempFile(this.prefix, this.suffix);
-            fos = new FileOutputStream(file);
-            workbook.write(fos);
-            return this.file;
+            return generate(workbook);
         } catch (Exception e) {
             throw new ExportException(e);
         } finally {
             IOUtils.closeQuietly(workbook);
         }
+    }
+
+    private File generate(Workbook workbook) throws IOException {
+        FileOutputStream fos;
+        for (int i = 0; i < this.dataMatrix.size(); i++) {
+            Sheet sheet = workbook.createSheet("Page_" + i);
+            for (int j = 0; j < this.dataMatrix.get(i).size(); j++) {
+                Row row = sheet.createRow(j);
+                for (int k = 0; k < this.dataMatrix.get(i).get(j).size(); k++) {
+                    row.createCell(k).setCellValue(this.dataMatrix.get(i).get(j).get(k));
+                }
+            }
+        }
+        //写入到文件流中
+        this.file = File.createTempFile(this.prefix, this.suffix);
+        fos = new FileOutputStream(file);
+        workbook.write(fos);
+        return this.file;
     }
 
     /**
@@ -160,6 +189,12 @@ public class ExcelExportHelper<T> {
         return this.file;
     }
 
+    /**
+     * 设置预处理器
+     */
+    public void setPreprocessor(Preprocessor preprocessor) {
+        this.preprocessor = preprocessor;
+    }
 
     /**
      * 清理文件
@@ -174,22 +209,25 @@ public class ExcelExportHelper<T> {
         }
     }
 
+
     /**
      * 写入一行
      */
-    private void writeRow(T t, Row row) throws IllegalAccessException {
+    private List<String> writeRow(T t) throws IllegalAccessException {
+        List<String> row = new ArrayList<>();
         for (int i = 0; i < this.docFields.length; i++) {
             DocField docField = this.docFields[i];
-            Cell cell = row.createCell(i);
-            if (ObjectUtils.isNotEmpty(docField)) {
+
+            if (EasyUtils.isNotEmpty(docField)) {
                 String value;
                 if (docField.exportFormat()) {
                     value = docField.getFormatter().write(docField.getField().get(t));
                 } else {
                     value = docField.getField().get(t) == null ? "" : String.valueOf(docField.getField().get(t));
                 }
-                cell.setCellValue(value);
+                row.add(value);
             }
         }
+        return row;
     }
 }

@@ -4,9 +4,9 @@ package cn.mxsic.easyfile;
 import java.util.Date;
 
 import cn.mxsic.easyfile.annotation.Cols;
-import cn.mxsic.easyfile.annotation.Unravel;
 import cn.mxsic.easyfile.annotation.Format;
 import cn.mxsic.easyfile.annotation.Title;
+import cn.mxsic.easyfile.annotation.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -37,7 +37,7 @@ public class Man {
     @Title("生日")
     private Date birthday;
 
-    @Unravel
+    @Transient
     @Title("身体")
     private Body body;
 //    @Transient

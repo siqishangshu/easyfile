@@ -1,11 +1,11 @@
 package cn.mxsic.easyfile.utils;
 
-import cn.mxsic.easyfile.exception.ExportException;
-
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+
+import cn.mxsic.easyfile.exception.ExportException;
 
 /**
  * Function: ObjectUtils <br>
@@ -14,7 +14,7 @@ import java.util.Optional;
  * @date: 2019-09-09 13:53:00
  */
 
-public abstract class ObjectUtils {
+public abstract class EasyUtils {
 
 
     public static boolean isEmpty(Object obj) {

@@ -18,11 +18,11 @@ import java.util.Map;
 
 import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
-import cn.mxsic.easyfile.base.CsvExcelConstant;
+import cn.mxsic.easyfile.base.EasyConstant;
 import cn.mxsic.easyfile.base.DataTypeProcessor;
 import cn.mxsic.easyfile.base.DocField;
 import cn.mxsic.easyfile.exception.ImportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
+import cn.mxsic.easyfile.utils.EasyUtils;
 
 
 /**
@@ -129,8 +129,8 @@ public class CsvImportHelper<T> {
             this.titles[i] = firstRow.get(i);
         }
         for (DocField docField : docFields) {
-            if (ObjectUtils.isNotEmpty(docField)) {
-                if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.importTitle()) {
+            if (EasyUtils.isNotEmpty(docField)) {
+                if (EasyUtils.isNotEmpty(docField.getTitle()) && docField.importTitle()) {
                     this.docFieldMap.put(docField.getTitle(), docField);
                 }
                 this.docFieldMap.put(docField.getField().getName(), docField);
@@ -143,15 +143,15 @@ public class CsvImportHelper<T> {
     }
 
     private void fullUp(List<String> values) throws IllegalAccessException {
-        T t = ObjectUtils.getInstance(this.tClass);
+        T t = EasyUtils.getInstance(this.tClass);
         for (int i = 0; i < values.size(); i++) {
             String value = values.get(i);
-            if (ObjectUtils.isEmpty(value)) {
+            if (EasyUtils.isEmpty(value)) {
                 continue;
             }
             String field = this.titles[i];
             DocField docField = this.docFieldMap.get(field);
-            if (ObjectUtils.isEmpty(docField)) {
+            if (EasyUtils.isEmpty(docField)) {
                 continue;
             }
             if (docField.importFormat()) {
@@ -182,14 +182,14 @@ public class CsvImportHelper<T> {
                 dataMatrix.add(list);
                 pre = "";
             } else {
-                pre = str + CsvExcelConstant.END_OF_LINE_SYMBOLS;
+                pre = str + EasyConstant.END_OF_LINE_SYMBOLS;
             }
 
         }
     }
 
     private boolean oneRow(String s) {
-        return s.split(String.valueOf(CsvExcelConstant.QUOTE_CHAR)).length % 2 == 1;
+        return s.split(String.valueOf(EasyConstant.QUOTE_CHAR)).length % 2 == 1;
     }
 
     /**
@@ -204,8 +204,8 @@ public class CsvImportHelper<T> {
     public List<String> encode(final String input) {
         List<String> list = new ArrayList<>();
         StringBuilder currentColumn = new StringBuilder();
-        char delimiter = CsvExcelConstant.DELIMITER;
-        char quote = CsvExcelConstant.QUOTE_CHAR;
+        char delimiter = EasyConstant.DELIMITER;
+        char quote = EasyConstant.QUOTE_CHAR;
         int hasQuotes = 0;
         char pre = ' ';
         for (char c : input.toCharArray()) {
@@ -234,7 +234,7 @@ public class CsvImportHelper<T> {
             }
             pre = c;
         }
-        if (ObjectUtils.isNotEmpty(currentColumn.toString())) {
+        if (EasyUtils.isNotEmpty(currentColumn.toString())) {
             String value = currentColumn.toString();
             if (!value.isEmpty() && value.endsWith(quote + "")) {
                 value = value.substring(1, value.length() - 1);

@@ -33,23 +33,23 @@ public enum DataTypeProcessor {
 
     public static Object handle(String v, String simpleName) {
         if (DataTypeProcessor.INT.simpleName.equalsIgnoreCase(simpleName)) {
-            if (v.contains(CsvExcelConstant.NUMERIC)) {
-                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            if (v.contains(EasyConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(EasyConstant.NUMERIC));
             }
             return Integer.parseInt(v);
         } else if (DataTypeProcessor.INTEGER.simpleName.equalsIgnoreCase(simpleName)) {
-            if (v.contains(CsvExcelConstant.NUMERIC)) {
-                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            if (v.contains(EasyConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(EasyConstant.NUMERIC));
             }
             return Integer.parseInt(v);
         } else if (DataTypeProcessor.LON.simpleName.equalsIgnoreCase(simpleName)) {
-            if (v.contains(CsvExcelConstant.NUMERIC)) {
-                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            if (v.contains(EasyConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(EasyConstant.NUMERIC));
             }
             return Long.parseLong(v);
         } else if (DataTypeProcessor.LONG.simpleName.equalsIgnoreCase(simpleName)) {
-            if (v.contains(CsvExcelConstant.NUMERIC)) {
-                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            if (v.contains(EasyConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(EasyConstant.NUMERIC));
             }
             return Long.parseLong(v);
         } else if (DataTypeProcessor.DOU.simpleName.equalsIgnoreCase(simpleName)) {
@@ -57,13 +57,13 @@ public enum DataTypeProcessor {
         } else if (DataTypeProcessor.DOUBLE.simpleName.equalsIgnoreCase(simpleName)) {
             return Double.parseDouble(v);
         } else if (DataTypeProcessor.SHO.simpleName.equalsIgnoreCase(simpleName)) {
-            if (v.contains(CsvExcelConstant.NUMERIC)) {
-                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            if (v.contains(EasyConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(EasyConstant.NUMERIC));
             }
             return Short.parseShort(v);
         } else if (DataTypeProcessor.SHORT.simpleName.equalsIgnoreCase(simpleName)) {
-            if (v.contains(CsvExcelConstant.NUMERIC)) {
-                v = v.substring(0,v.lastIndexOf(CsvExcelConstant.NUMERIC));
+            if (v.contains(EasyConstant.NUMERIC)) {
+                v = v.substring(0,v.lastIndexOf(EasyConstant.NUMERIC));
             }
             return Short.parseShort(v);
         } else if (DataTypeProcessor.STR.simpleName.equalsIgnoreCase(simpleName)) {

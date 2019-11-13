@@ -10,9 +10,8 @@ import cn.mxsic.easyfile.annotation.Format;
 import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.annotation.Title;
 import cn.mxsic.easyfile.annotation.Transient;
-import cn.mxsic.easyfile.annotation.Unravel;
 import cn.mxsic.easyfile.exception.ExportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
+import cn.mxsic.easyfile.utils.EasyUtils;
 
 /**
  * 获取注解信息
@@ -30,7 +29,7 @@ public final class AnnotationHelper {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             Transient transient_ = field.getAnnotation(Transient.class);
-            if (ObjectUtils.isNotEmpty(transient_)) {
+            if (EasyUtils.isNotEmpty(transient_)) {
                 if (transient_.scopeType().equals(scopeType) || transient_.scopeType().equals(ScopeType.BOTH)) {
                     continue;
                 }
@@ -39,22 +38,18 @@ public final class AnnotationHelper {
             field.setAccessible(true);
             docField.setField(field);
             Title title = field.getAnnotation(Title.class);
-            if (ObjectUtils.isNotEmpty(title)) {
+            if (EasyUtils.isNotEmpty(title)) {
                 docField.setTitle(title.value());
                 docField.setTitleScope(title.scopeType());
             }
             Cols cols = field.getAnnotation(Cols.class);
-            if (ObjectUtils.isNotEmpty(cols)) {
+            if (EasyUtils.isNotEmpty(cols)) {
                 docField.setCols(cols.value());
             }
             Format format = field.getAnnotation(Format.class);
-            if (ObjectUtils.isNotEmpty(format)) {
-                docField.setFormatter(ObjectUtils.getInstance(format.value()));
+            if (EasyUtils.isNotEmpty(format)) {
+                docField.setFormatter(EasyUtils.getInstance(format.value()));
                 docField.setFormatScope(format.scopeType());
-            }
-            Unravel unravel = field.getAnnotation(Unravel.class);
-            if (ObjectUtils.isNotEmpty(unravel)) {
-                docField.setUnravelList(getFields(field.getDeclaringClass(),scopeType));
             }
             fieldList.add(docField);
         }
@@ -70,17 +65,17 @@ public final class AnnotationHelper {
             throw new ExportException("export nothing");
         }
         int maxCol = fieldList.size();
-        DocField maxField = fieldList.stream().filter(f -> ObjectUtils.isNotEmpty(f.getCols())).max(
+        DocField maxField = fieldList.stream().filter(f -> EasyUtils.isNotEmpty(f.getCols())).max(
                 Comparator.comparing(DocField::getCols)).orElse(null);
-        if (ObjectUtils.isNotEmpty(maxField)) {
+        if (EasyUtils.isNotEmpty(maxField)) {
             maxCol = Math.max(maxCol, maxField.getCols());
         }
         DocField[] fieldArr = new DocField[maxCol];
         List<DocField> temp = new ArrayList<>();
 
         for (DocField docField : fieldList) {
-            if (ObjectUtils.isNotEmpty(docField.getCols())) {
-                if (ObjectUtils.isEmpty(fieldArr[docField.getCols() - 1])) {
+            if (EasyUtils.isNotEmpty(docField.getCols())) {
+                if (EasyUtils.isEmpty(fieldArr[docField.getCols() - 1])) {
                     fieldArr[docField.getCols() - 1] = docField;
                     continue;
                 }
@@ -89,7 +84,7 @@ public final class AnnotationHelper {
         }
         int index = 0;
         for (DocField docField : temp) {
-            while (ObjectUtils.isNotEmpty(fieldArr[index])) {
+            while (EasyUtils.isNotEmpty(fieldArr[index])) {
                 index++;
             }
             fieldArr[index] = docField;
@@ -107,7 +102,7 @@ public final class AnnotationHelper {
     public static String[] getHeadFieldTitles(DocField[] docFields) {
         String[] headTitles = new String[docFields.length];
         for (int i = 0; i < docFields.length; i++) {
-            if (ObjectUtils.isNotEmpty(docFields[i])) {
+            if (EasyUtils.isNotEmpty(docFields[i])) {
                 if (docFields[i].exportTitle()) {
                     headTitles[i] = docFields[i].getTitle();
                 } else {

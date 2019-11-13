@@ -1,5 +1,6 @@
 package cn.mxsic.easyfile.excel;
 
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -25,9 +26,11 @@ import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
 import cn.mxsic.easyfile.base.DataTypeProcessor;
 import cn.mxsic.easyfile.base.DocField;
+import cn.mxsic.easyfile.base.EasyConstant;
 import cn.mxsic.easyfile.base.FileType;
+import cn.mxsic.easyfile.base.Preprocessor;
 import cn.mxsic.easyfile.exception.ImportException;
-import cn.mxsic.easyfile.utils.ObjectUtils;
+import cn.mxsic.easyfile.utils.EasyUtils;
 
 /**
  * @author siqishangshu
@@ -52,6 +55,8 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     private Workbook workbook;
 
     private String[] titles;
+
+    private Preprocessor preprocessor;
 
     /**
      * 设置保留多少位小数
@@ -160,6 +165,13 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     }
 
     /**
+     * 设置预处理器
+     */
+    public void setPreprocessor(Preprocessor preprocessor) {
+        this.preprocessor = preprocessor;
+    }
+
+    /**
      * import
      */
     public List<T> importData() {
@@ -167,6 +179,9 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             numberFormat.setMaximumFractionDigits(20);
             numberFormat.setGroupingUsed(false);
             loadDataMatrix();
+            if (preprocessor != null) {
+                this.dataMatrix = this.preprocessor.process(this.dataMatrix);
+            }
             return getResult();
         } catch (Exception e) {
             throw new ImportException(e);
@@ -207,8 +222,8 @@ public class ExcelImportHelper<T> extends DefaultHandler {
     private List<T> getResult() throws IllegalAccessException {
         DocField[] docFields = AnnotationHelper.getAnnotationFields(this.tClass, ScopeType.IMPORT);
         for (DocField docField : docFields) {
-            if (ObjectUtils.isNotEmpty(docField)) {
-                if (ObjectUtils.isNotEmpty(docField.getTitle()) && docField.importTitle()) {
+            if (EasyUtils.isNotEmpty(docField)) {
+                if (EasyUtils.isNotEmpty(docField.getTitle()) && docField.importTitle()) {
                     this.docFieldMap.put(docField.getTitle(), docField);
                 }
                 this.docFieldMap.put(docField.getField().getName(), docField);
@@ -220,7 +235,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
                 List<String> head = this.dataMatrix.get(i).get(this.headRow);
                 this.titles = new String[head.size()];
                 for (int j = 0; j < head.size(); j++) {
-                    if (ObjectUtils.isNotEmpty(head.get(j))) {
+                    if (EasyUtils.isNotEmpty(head.get(j))) {
                         this.titles[j] = head.get(j);
                     }
                 }
@@ -231,7 +246,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             }
             List<T> list = new ArrayList<>();
             for (int j = sheetHeadLine; j < this.dataMatrix.get(i).size(); j++) {
-                T t = ObjectUtils.getInstance(this.tClass);
+                T t = EasyUtils.getInstance(this.tClass);
                 for (int k = 0; k < this.dataMatrix.get(i).get(j).size(); k++) {
                     fillUp(t, k, this.dataMatrix.get(i).get(j).get(k));
                 }
@@ -247,12 +262,12 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      * 填数据
      */
     private void fillUp(T t, int j, String v) throws IllegalAccessException {
-        if (ObjectUtils.isEmpty(v)) {
+        if (EasyUtils.isEmpty(v)) {
             return;
         }
         String field = this.titles[j];
         DocField docField = this.docFieldMap.get(field);
-        if (ObjectUtils.isEmpty(docField)) {
+        if (EasyUtils.isEmpty(docField)) {
             return;
         }
         if (docField.importFormat()) {
@@ -280,7 +295,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
                     ArrayList<String> list = new ArrayList<>(cellSize);
                     for (int j = 0; j < cellSize; j++) {
                         //一行占位无数据。
-                        if (ObjectUtils.isEmpty(row)) {
+                        if (EasyUtils.isEmpty(row)) {
                             list.add(getCellStringVal(null));
                         } else {
                             //根据不同类型转化成字符串
@@ -296,8 +311,8 @@ public class ExcelImportHelper<T> extends DefaultHandler {
 
     private String getCellStringVal(Cell cell) {
         //无数据时
-        if (ObjectUtils.isEmpty(cell)) {
-            return new String();
+        if (EasyUtils.isEmpty(cell)) {
+            return EasyConstant.EMPTY;
         }
         CellType cellType = cell.getCellTypeEnum();
         switch (cellType) {
@@ -310,11 +325,11 @@ public class ExcelImportHelper<T> extends DefaultHandler {
             case FORMULA:
                 return cell.getCellFormula();
             case BLANK:
-                return new String();
+                return EasyConstant.EMPTY;
             case ERROR:
                 return String.valueOf(cell.getErrorCellValue());
             default:
-                return new String();
+                return EasyConstant.EMPTY;
         }
     }
 }

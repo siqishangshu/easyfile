@@ -22,11 +22,12 @@ import cn.mxsic.easyfile.utils.DateUtils;
 public class ImportTest {
 
     public static void main(String[] args) {
-//        excelImport();
-        List<Man> manList = generalMan(65530 * 10);
-        System.out.println(DateUtils.getNow());
-        excelExport(manList);
-        System.out.println(DateUtils.getNow());
+        excelImport();
+//        List<Man> manList = generalMan(650);
+//        System.out.println(DateUtils.getNow());
+//        excelExport(manList);
+//        System.out.println(DateUtils.getNow());
+
 //        csvExport(manList);
 //        csvImport();
 
@@ -61,7 +62,7 @@ public class ImportTest {
         System.out.println(new Date() + filePath);
         File file = new File(filePath);
         ExcelImportHelper<Man> manExcelImportHelper = new ExcelImportHelper<>(file, FileType.getFileType(file.getName()), Man.class);
-        manExcelImportHelper.setFirstSheetHeadLine(5);
+        manExcelImportHelper.setFirstSheetHeadLine(4);
         manExcelImportHelper.setEverySheetHaveSameHead(false);
         manExcelImportHelper.importData();
         System.out.println(new Date() + "excel size:" + manExcelImportHelper.getData().size());
@@ -72,11 +73,12 @@ public class ImportTest {
         ExcelExportHelper<Man> excelExportHelper = new ExcelExportHelper<>(Man.class, FileType.XLSX);
         List<List<String>> lists = new ArrayList<>();
         List<String> list = new ArrayList<>();
-        list.add("这是一个人的导出表格");
+        list.add("这是一个人的导出表格\t\t\t");
         lists.add(list);
         list = new ArrayList<>();
-        list.add("每一条都是一个属性");
-        list.add("有些有转义");
+        list.add("");
+        list.add("每一条都是一个属性\n\t");
+        list.add("有些有转义\t\t");
         lists.add(list);
         list = new ArrayList<>();
         list.add("注：每一页最多120行");
