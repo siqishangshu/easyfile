@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cn.mxisc</groupId>
     <artifactId>easyfile</artifactId>
-    <version>1.0.0-RELEASE</version>
+    <version>2gs.0.0-RELEASE</version>
 
     <packaging>jar</packaging>
     <name>EasyFile</name>
