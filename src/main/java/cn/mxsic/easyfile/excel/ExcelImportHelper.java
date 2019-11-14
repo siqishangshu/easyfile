@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
@@ -114,6 +115,7 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      * 设置预处理器
      */
     public void setPreprocessor(Preprocessor preprocessor) {
+        Objects.nonNull(preprocessor);
         this.preprocessor = preprocessor;
     }
 
