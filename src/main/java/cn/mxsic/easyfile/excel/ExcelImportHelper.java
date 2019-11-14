@@ -68,60 +68,6 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      *
      * @param file
      * @param tClass
-     * @param headRow
-     * @throws FileNotFoundException
-     */
-    @Deprecated
-    public ExcelImportHelper(File file, FileType fileType, Class<T> tClass, int headRow) {
-        try {
-            if (fileType.equals(FileType.XLS)) {
-                workbook = new HSSFWorkbook(new FileInputStream(file));
-                IOUtils.closeQuietly(workbook);
-            } else if (fileType.equals(FileType.XLSX)) {
-                workbook = new XSSFWorkbook(new FileInputStream(file));
-                IOUtils.closeQuietly(workbook);
-            } else {
-                throw new ImportException("UnSupport file type");
-            }
-        } catch (IOException e) {
-            throw new ImportException(e);
-        }
-        this.tClass = tClass;
-        this.headRow = headRow - 1;
-    }
-
-
-    /**
-     *
-     * @param inputStream
-     * @param fileType
-     * @param tClass
-     * @param headRow
-     * @throws IOException
-     */
-    @Deprecated
-    public ExcelImportHelper(InputStream inputStream, FileType fileType, Class<T> tClass, int headRow) {
-        try {
-            if (fileType.equals(FileType.XLS)) {
-                workbook = new HSSFWorkbook(inputStream);
-                IOUtils.closeQuietly(workbook);
-            } else if (fileType.equals(FileType.XLSX)) {
-                workbook = new XSSFWorkbook(inputStream);
-                IOUtils.closeQuietly(workbook);
-            } else {
-                throw new ImportException("UnSupport file type");
-            }
-        } catch (IOException e) {
-            throw new ImportException(e);
-        }
-        this.tClass = tClass;
-        this.headRow = headRow - 1;
-    }
-
-    /**
-     *
-     * @param file
-     * @param tClass
      * @throws FileNotFoundException
      */
     public ExcelImportHelper(File file, FileType fileType, Class<T> tClass) {
@@ -199,6 +145,9 @@ public class ExcelImportHelper<T> extends DefaultHandler {
      * set first sheet head format data start line index
      */
     public void setFirstSheetHeadLine(int headRow) {
+        if (headRow < 1) {
+            throw new IllegalArgumentException(" head row Cannot be less than 1");
+        }
         this.headRow = headRow - 1;
     }
 

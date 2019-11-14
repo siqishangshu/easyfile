@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import cn.mxsic.easyfile.annotation.ScopeType;
 import cn.mxsic.easyfile.base.AnnotationHelper;
@@ -97,6 +98,38 @@ public class ExcelExportHelper<T> {
         this.describes = describes;
     }
 
+
+
+    /**
+     * 导出文件
+     * NOTE:max size 65535*3
+     */
+    public File export(List<T> data) {
+        if (data != null && data.size() + describes.size() > MAX_SHEET_RECORDS_COUNT * MAX_SHEET) {
+            throw new ExportException("Over export date max size:[" + MAX_SHEET_RECORDS_COUNT * MAX_SHEET + "]");
+        }
+        Workbook workbook;
+        if (this.suffix.toLowerCase().endsWith(FileType.XLSX.getType())) {
+            workbook = new SXSSFWorkbook();
+        } else if (this.suffix.toLowerCase().endsWith(FileType.XLS.getType())) {
+            workbook = new HSSFWorkbook();
+        } else {
+            throw new ExportException("UnSupport file type");
+        }
+        this.data = data;
+        try {
+            loadMatrix();
+            if (preprocessor != null) {
+                this.dataMatrix = this.preprocessor.process(this.dataMatrix);
+            }
+            return generate(workbook);
+        } catch (Exception e) {
+            throw new ExportException(e);
+        } finally {
+            IOUtils.closeQuietly(workbook);
+        }
+    }
+
     private void loadMatrix() throws IllegalAccessException {
         this.docFields = AnnotationHelper.getAnnotationFields(tClass, ScopeType.EXPORT);
         List<List<String>> sheet = new ArrayList<>();
@@ -134,36 +167,6 @@ public class ExcelExportHelper<T> {
         }
     }
 
-    /**
-     * 导出文件
-     * NOTE:max size 65535*3
-     */
-    public File export(List<T> data) {
-        if (data != null && data.size() + describes.size() > MAX_SHEET_RECORDS_COUNT * MAX_SHEET) {
-            throw new ExportException("Over export date max size:[" + MAX_SHEET_RECORDS_COUNT * MAX_SHEET + "]");
-        }
-        Workbook workbook;
-        if (this.suffix.toLowerCase().endsWith(FileType.XLSX.getType())) {
-            workbook = new SXSSFWorkbook();
-        } else if (this.suffix.toLowerCase().endsWith(FileType.XLS.getType())) {
-            workbook = new HSSFWorkbook();
-        } else {
-            throw new ExportException("UnSupport file type");
-        }
-        this.data = data;
-        try {
-            loadMatrix();
-            if (preprocessor != null) {
-                this.dataMatrix = this.preprocessor.process(this.dataMatrix);
-            }
-            return generate(workbook);
-        } catch (Exception e) {
-            throw new ExportException(e);
-        } finally {
-            IOUtils.closeQuietly(workbook);
-        }
-    }
-
     private File generate(Workbook workbook) throws IOException {
         FileOutputStream fos;
         for (int i = 0; i < this.dataMatrix.size(); i++) {
@@ -193,6 +196,7 @@ public class ExcelExportHelper<T> {
      * 设置预处理器
      */
     public void setPreprocessor(Preprocessor preprocessor) {
+        Objects.nonNull(preprocessor);
         this.preprocessor = preprocessor;
     }
 
